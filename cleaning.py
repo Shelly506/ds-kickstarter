@@ -54,7 +54,7 @@ def clean_data(df_kick):
     column and transforms the state column to values of 0 and 1.
     '''
     #first drop redundant, unnecessary or almost empty collumns
-    columns_drop = ['state_changed_at','launched_at','deadline',"location","name","pledged","profile",'is_starrable', 'id', 'photo', 'blurb', 'currency_symbol', 'fx_rate', 'currency_trailing_code', 'usd_type', 'urls', 'source_url', 'converted_pledged_amount','friends','is_starred','is_backing','permissions','current_currency']
+    columns_drop = ['state_changed_at','launched_at','deadline',"location","pledged","profile",'is_starrable', 'id', 'photo', 'currency_symbol', 'fx_rate', 'currency_trailing_code', 'usd_type', 'urls', 'source_url', 'converted_pledged_amount','friends','is_starred','is_backing','permissions','current_currency']
 
     df_kick = df_kick.drop(columns_drop, axis=1)
 
@@ -85,5 +85,19 @@ def clean_data(df_kick):
     df_kick.state = df_kick.state.replace("successful", 1)
     df_kick.state = df_kick.state.replace("failed", 0)
     df_kick.state.unique()
+
+    df_kick = df_kick.dropna(subset=["blurb"])
+
+    # counts the number of words (number of spaces + 1) in title ("name") and description ("blurb")
+    df_kick["word_count_description"] = [len(x.split()) for x in df_kick.blurb]
+    df_kick["word_count_name"] = [len(x.split()) for x in df_kick.name]
+
+    # boolean whether title and description are split by ":" or " - " within first 30 characters
+    df_kick["name_is_split"] = [int(":" in x[0:30] or " - " in x[0:30]) for x in df_kick.name]
+    df_kick["description_is_split"] = [int(":" in x[0:30] or " - " in x[0:30]) for x in df_kick.blurb]
+
+    # boolean whether reader is addressed by "you" or "your" within first 30 characters
+    df_kick["name_addresses_reader"] = [int(bool(re.search("your? ", x[0:30], re.IGNORECASE))) for x in df_kick.name]
+    df_kick["description_addresses_reader"] = [int(bool(re.search("your? ", x[0:30], re.IGNORECASE))) for x in df_kick.blurb]
 
     return df_kick
