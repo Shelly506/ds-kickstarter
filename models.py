@@ -1,8 +1,12 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_predict, GridSearchCV
 from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import recall_score, accuracy_score, precision_score, confusion_matrix
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.compose import ColumnTransformer
 
 import seaborn as sns
 import pickle
@@ -18,7 +22,7 @@ def baseline(df, feature, threshold):
     y_pred = [1 if x < threshold else 0 for x in df[feature]] 
     return y_pred
 
-def eval_metrics(y_true, y_pred, model="current model"):
+def eval_metrics(y_true, y_pred, model="current model", print_cm=True):
     '''Simple evaluation function. Prints accuracy, recall and
     precision as values and plots a confusion matrix.
     '''
@@ -27,7 +31,8 @@ def eval_metrics(y_true, y_pred, model="current model"):
     print("Recall:", recall_score(y_true, y_pred))
     print("Precision:", precision_score(y_true, y_pred))
     cm = confusion_matrix(y_true, y_pred)
-    sns.heatmap(cm, cmap="YlGnBu_r", annot=True, fmt=".0f");
+    if print_cm:
+        sns.heatmap(cm, cmap="YlGnBu_r", annot=True, fmt=".0f");
 
 def simple_model(X_train, y_train, X_test):
     '''Both fitting and prediction for a simple logistic regression.
